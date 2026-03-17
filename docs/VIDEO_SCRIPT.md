@@ -93,7 +93,75 @@
 
 ---
 
-## Scene 4: Subnets — Specialized AI Networks (60s)
+## Scene 4: Terminal — Start Miner & Validator (60s)
+
+**Show:** Two terminal windows side-by-side (dark theme, font 16pt)
+
+**Action:** Run the demo batch files or commands live
+
+**Terminal 1 — Miner:**
+
+```bash
+python run_miner.py --subnet 0 --port 8091
+```
+
+**Say:**
+> "Let me show you the system running live. In Terminal 1,
+> I'm starting a miner node on Subnet 0. It connects to Hedera,
+> registers on-chain via SubnetRegistryV2, and starts listening
+> for AI tasks. Under the hood it uses Gemini 2.0 Flash for inference."
+
+**Wait for output showing:**
+- `Miner registered on-chain`
+- `Axon server listening on port 8091`
+- Hedera transaction IDs in logs
+
+**Terminal 2 — Validator:**
+
+```bash
+python run_validator.py --subnet 0 --auto-register --stake 50000 --miners http://localhost:8091
+```
+
+**Say:**
+> "In Terminal 2, I start a validator. It auto-registers with a
+> 50,000 MDT stake, connects to our miner, and begins the
+> scoring cycle. Watch the logs — every score is submitted
+> on-chain and logged to HCS."
+
+**Wait for output showing:**
+- `Validator registered — stake: 50,000 MDT`
+- `Scoring epoch started`
+- HCS message submission confirmations
+
+---
+
+## Scene 5: Terminal — On-Chain Verification (45s)
+
+**Show:** Terminal 3 — run verification script
+
+**Action:** Run `python scripts/verify_all.py` or `python scripts/demo_video_e2e.py`
+
+**Say:**
+> "Now let's verify everything on-chain. This script queries
+> the Hedera Mirror Node directly — checking smart contract state,
+> HCS messages, and token balances.
+>
+> You can see: the SubnetRegistryV2 contract confirms our miner
+> and validator are registered. The HCS topics have real consensus
+> messages. And the MDT token shows correct staking balances.
+> Nothing is faked — it's all verifiable on HashScan."
+
+**Highlight on screen:**
+- Contract verification: `SubnetRegistryV2` at `0.0.8101733` ✅
+- HCS messages count on scoring topic
+- MDT token balance verification
+- HashScan links printed in terminal
+
+**Action:** Click one of the HashScan links → browser opens to show raw on-chain data
+
+---
+
+## Scene 6: Subnets — Specialized AI Networks (60s)
 
 **Action:** Click **Subnets** tab
 
@@ -124,7 +192,7 @@
 
 ---
 
-## Scene 5: Miners — AI Compute Providers (60s)
+## Scene 7: Miners — AI Compute Providers (60s)
 
 **Action:** Click **Miners** tab
 
@@ -148,7 +216,7 @@
 
 ---
 
-## Scene 6: Validators — Quality Assurance (60s)
+## Scene 8: Validators — Quality Assurance (60s)
 
 **Action:** Click **Validators** tab
 
@@ -175,7 +243,7 @@
 
 ---
 
-## Scene 7: Tasks — AI Marketplace (60s)
+## Scene 9: Tasks — AI Marketplace (60s)
 
 **Action:** Click **Tasks** tab
 
@@ -201,7 +269,7 @@
 
 ---
 
-## Scene 8: Tokenomics — Economic Model (45s)
+## Scene 10: Tokenomics — Economic Model (45s)
 
 **Action:** Click **Tokenomics** tab
 
@@ -229,7 +297,7 @@
 
 ---
 
-## Scene 9: Live Demo — Submit & Verify (60s)
+## Scene 11: Live Demo — Submit & Verify (60s)
 
 **Action:** Run `demo\start_T3_live_tasks.bat` or `python scripts/demo_video_e2e.py`
 
@@ -253,7 +321,7 @@
 
 ---
 
-## Scene 10: Architecture Recap (30s)
+## Scene 12: Architecture Recap (30s)
 
 **Show:** Dashboard Home tab → Subnet Performance table → Verify on HashScan button
 
@@ -295,7 +363,7 @@ graph TD
 
 ---
 
-## Scene 11: Outro — Why Hedera (30s)
+## Scene 13: Outro — Why Hedera (30s)
 
 **Show:** Dashboard Home hero section
 
@@ -318,17 +386,19 @@ graph TD
 | 1 | Intro & Vision | Home — Hero | 30s |
 | 2 | Market & Network | Home — Market + Stats | 45s |
 | 3 | Explorer | Explorer tab | 45s |
-| 4 | Subnets | Subnets tab | 60s |
-| 5 | Miners | Miners tab | 60s |
-| 6 | Validators | Validators tab | 60s |
-| 7 | Tasks | Tasks tab | 60s |
-| 8 | Tokenomics | Tokenomics tab | 45s |
-| 9 | Live Demo | Terminal + Tasks tab | 60s |
-| 10 | Architecture | Home — bottom | 30s |
-| 11 | Outro | Home — Hero | 30s |
-| | **TOTAL** | | **~8.5 min** |
+| 4 | **Terminal — Miner & Validator** | **2 terminals side-by-side** | **60s** |
+| 5 | **Terminal — On-Chain Verify** | **Terminal + HashScan** | **45s** |
+| 6 | Subnets | Subnets tab | 60s |
+| 7 | Miners | Miners tab | 60s |
+| 8 | Validators | Validators tab | 60s |
+| 9 | Tasks | Tasks tab | 60s |
+| 10 | Tokenomics | Tokenomics tab | 45s |
+| 11 | Live Demo | Terminal + Tasks tab | 60s |
+| 12 | Architecture | Home — bottom | 30s |
+| 13 | Outro | Home — Hero | 30s |
+| | **TOTAL** | | **~10 min** |
 
-> 💡 **Tip:** Có thể cắt Scenes 5–6 (Miners/Validators) thành tóm tắt ngắn hơn
+> 💡 **Tip:** Có thể cắt Scenes 7–8 (Miners/Validators) thành tóm tắt ngắn hơn
 > nếu muốn giữ video dưới 7 phút.
 
 ---
