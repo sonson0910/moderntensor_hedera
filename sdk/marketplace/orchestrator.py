@@ -12,7 +12,6 @@ This is the class that external users interact with.
 
 from __future__ import annotations
 
-import logging
 import time
 from typing import Any, Callable, Dict, List, Optional
 
@@ -46,7 +45,23 @@ from ..protocol.dispute import DisputeManager
 from ..protocol.badges import BadgeManager
 from ..protocol.emissions import EmissionSchedule
 
-logger = logging.getLogger(__name__)
+# ── New SDK modules (Issues #1-#7) ──
+from ..logging_config import setup_logging, set_correlation_id, get_correlation_id
+from ..resilience import CircuitBreaker, RetryWithBackoff, CircuitOpenError
+from ..rate_limiter import RateLimiter
+# Metrics are imported lazily to avoid circular imports
+# (sdk.__init__ → marketplace.orchestrator → sdk.metrics → sdk.__init__)
+_metrics_collector = None
+
+def _get_metrics():
+    """Lazy-load metrics collector to break circular import."""
+    global _metrics_collector
+    if _metrics_collector is None:
+        from ..metrics import MetricsCollector
+        _metrics_collector = MetricsCollector()
+    return _metrics_collector
+
+logger = setup_logging("marketplace.orchestrator")
 
 
 class MarketplaceProtocol:
@@ -67,7 +82,7 @@ class MarketplaceProtocol:
     Example:
         # Initialize
         protocol = MarketplaceProtocol(
-            config=ProtocolConfig(protocol_fee_rate=0.05),
+            config=ProtocolConfig(),
             validator_id="0.0.99999",
         )
 
@@ -168,10 +183,20 @@ class MarketplaceProtocol:
         # ── Validator registry ──
         self._validators: Dict[str, Dict[str, Any]] = {}
 
+        # ── Resilience: per-miner circuit breakers (Issue #2) ──
+        self._miner_circuits: Dict[str, CircuitBreaker] = {}
+        self._retry = RetryWithBackoff(max_retries=3, base_delay=1.0)
+
+        # ── Rate Limiter: per-miner call throtting (Issue #5) ──
+        self._rate_limiter = RateLimiter(
+            max_tokens=20, refill_rate=5.0, refill_interval=60.0,
+        )
+
         logger.info(
             "MarketplaceProtocol initialized — validator=%s, poi=%s, "
             "reward_system=active (dry_run=%s), hcs_sync=%s, "
-            "staking=on, disputes=on, badges=on, emissions=on",
+            "staking=on, disputes=on, badges=on, emissions=on, "
+            "resilience=on, rate_limiter=on, metrics=on",
             validator_id, enable_poi, dry_run, self._hcs_sync is not None,
         )
 
@@ -467,6 +492,15 @@ class MarketplaceProtocol:
         max_miners: int = 3,
     ) -> TaskRequest:
         """Submit a new task to the marketplace."""
+        import uuid
+        # ── Correlation ID for structured logging (Issue #3) ──
+        correlation_id = str(uuid.uuid4())[:8]
+        set_correlation_id(correlation_id)
+
+        # ── Prometheus metric (Issue #6) ──
+        TASKS_CREATED.inc()
+        _start = time.time()
+
         task = self.task_manager.submit_task(
             subnet_id=subnet_id,
             task_type=task_type,
@@ -496,6 +530,7 @@ class MarketplaceProtocol:
             "subnet_id": subnet_id,
             "reward": reward_amount,
             "escrow": "created",
+            "correlation_id": correlation_id,
         })
         return task
 
@@ -515,13 +550,39 @@ class MarketplaceProtocol:
         output: Dict[str, Any],
         execution_time: Optional[float] = None,
     ) -> TaskResult:
-        """Submit a result from a miner."""
-        result = self.task_manager.submit_result(
-            task_id=task_id,
-            miner_id=miner_id,
-            output=output,
-            execution_time=execution_time,
-        )
+        """Submit a result from a miner (with rate-limit + circuit-breaker guard)."""
+        # ── Rate limiter check (Issue #5) ──
+        if not self._rate_limiter.consume(miner_id):
+            logger.warning(
+                "Rate limit exceeded for miner %s on task %s",
+                miner_id, task_id,
+            )
+            raise ValueError(f"Rate limit exceeded for miner {miner_id}")
+
+        # ── Circuit breaker per miner (Issue #2) ──
+        cb = self._get_miner_circuit(miner_id)
+        MINER_CALLS.inc()
+        _miner_start = time.time()
+
+        try:
+            result = cb.call(
+                lambda: self.task_manager.submit_result(
+                    task_id=task_id,
+                    miner_id=miner_id,
+                    output=output,
+                    execution_time=execution_time,
+                )
+            )
+        except CircuitOpenError:
+            TASKS_FAILED.inc()
+            logger.error(
+                "Circuit OPEN for miner %s — rejecting submission for task %s",
+                miner_id, task_id,
+            )
+            raise
+
+        MINER_LATENCY.observe(time.time() - _miner_start)
+
         self._log_event("result_submitted", {
             "task_id": task_id,
             "miner_id": miner_id,
@@ -643,18 +704,22 @@ class MarketplaceProtocol:
         except (KeyError, ValueError) as e:
             logger.debug("Escrow settlement skipped: %s", e)
 
-        # Record analytics for completed tasks
+        # Record analytics + Prometheus metrics for completed tasks
         if validation.is_valid:
+            TASKS_COMPLETED.inc()
             fee = self.task_manager.get_fee_breakdown(task_id)
             task_obj = self.task_manager.get_task(task_id)
+            elapsed = time.time() - self._started_at
+            TASK_DURATION.observe(elapsed)
             self.analytics.record_task_completed(
                 subnet_id=task_obj.subnet_id if task_obj else 0,
                 reward=fee.reward_amount if fee else 0,
                 score=validation.winner_score,
-                completion_time=time.time() - self._started_at,
+                completion_time=elapsed,
                 protocol_fee=fee.protocol_fee if fee else 0,
             )
         else:
+            TASKS_FAILED.inc()
             task_obj = self.task_manager.get_task(task_id)
             self.analytics.record_task_failed(
                 subnet_id=task_obj.subnet_id if task_obj else 0,
@@ -1052,3 +1117,13 @@ class MarketplaceProtocol:
         max_events = 10000
         if len(self._event_log) > max_events:
             self._event_log = self._event_log[-max_events:]
+
+    def _get_miner_circuit(self, miner_id: str) -> CircuitBreaker:
+        """Get or create a circuit breaker for a specific miner."""
+        if miner_id not in self._miner_circuits:
+            self._miner_circuits[miner_id] = CircuitBreaker(
+                failure_threshold=5,
+                recovery_timeout=60,
+                name=f"miner-{miner_id}",
+            )
+        return self._miner_circuits[miner_id]

@@ -1,0 +1,48 @@
+﻿======================================================================
+  ModernTensor - Test One Epoch (Offline)
+======================================================================
+
+[1/5] Starting miners...
+{"timestamp": "2026-03-15T17:09:33.593833+00:00", "level": "INFO", "logger": "sdk.protocol.axon", "message": "Axon started \u2014 miner=miner-0, endpoint=http://127.0.0.1:8091, subnets=[0]", "module": "axon", "function": "start", "line": 249}
+  OK Miner 1 started on http://127.0.0.1:8091
+{"timestamp": "2026-03-15T17:09:33.594569+00:00", "level": "INFO", "logger": "sdk.protocol.axon", "message": "Axon started \u2014 miner=miner-1, endpoint=http://127.0.0.1:8092, subnets=[0]", "module": "axon", "function": "start", "line": 249}
+  OK Miner 2 started on http://127.0.0.1:8092
+
+[2/5] Creating validator...
+{"timestamp": "2026-03-15T17:09:34.095385+00:00", "level": "INFO", "logger": "sdk.scoring.weights", "message": "WeightCalculator initialized \u2014 cap=0.15, exp=2.0", "module": "weights", "function": "__init__", "line": 100}
+{"timestamp": "2026-03-15T17:09:34.095763+00:00", "level": "INFO", "logger": "sdk.scoring.consensus", "message": "ScoreConsensus initialized \u2014 min_validators=1, outlier_k=1.5", "module": "consensus", "function": "__init__", "line": 91}
+  OK online: miner-0 @ http://127.0.0.1:8091
+  OK online: miner-1 @ http://127.0.0.1:8092
+
+[3/5] Sending task to miners...
+  Task hash: 807ca9e12febbf50...
+{"timestamp": "2026-03-15T17:09:34.305713+00:00", "level": "INFO", "logger": "sdk.protocol.axon", "message": "Axon received task test-epo (type=code_review) from validator", "module": "axon", "function": "_handle_task", "line": 103}
+{"timestamp": "2026-03-15T17:09:34.306138+00:00", "level": "INFO", "logger": "sdk.protocol.axon", "message": "Task test-epo completed in 0.00s", "module": "axon", "function": "_handle_task", "line": 132}
+{"timestamp": "2026-03-15T17:09:34.306294+00:00", "level": "INFO", "logger": "sdk.protocol.axon", "message": "Axon received task test-epo (type=code_review) from validator", "module": "axon", "function": "_handle_task", "line": 103}
+{"timestamp": "2026-03-15T17:09:34.306484+00:00", "level": "INFO", "logger": "sdk.protocol.dendrite", "message": "Dendrite \u2192 miner-0: task test-epo completed in 0.00s", "module": "dendrite", "function": "send_task", "line": 180}
+{"timestamp": "2026-03-15T17:09:34.306726+00:00", "level": "INFO", "logger": "sdk.protocol.axon", "message": "Task test-epo completed in 0.00s", "module": "axon", "function": "_handle_task", "line": 132}
+{"timestamp": "2026-03-15T17:09:34.306871+00:00", "level": "INFO", "logger": "sdk.protocol.dendrite", "message": "Dendrite \u2192 miner-1: task test-epo completed in 0.00s", "module": "dendrite", "function": "send_task", "line": 180}
+{"timestamp": "2026-03-15T17:09:34.307131+00:00", "level": "INFO", "logger": "sdk.protocol.dendrite", "message": "Dendrite broadcast: 2 miners, 2 success, 0 failed", "module": "dendrite", "function": "broadcast", "line": 302}
+  OK miner-0: score=0.82, confidence=0.9, latency=0.001s
+  OK miner-1: score=0.82, confidence=0.9, latency=0.002s
+
+[4/5] Scoring miners...
+  miner-0: 0.8280
+  miner-1: 0.8280
+{"timestamp": "2026-03-15T17:09:34.307257+00:00", "level": "INFO", "logger": "sdk.scoring.consensus", "message": "Consensus: score=0.8280, confidence=0.48, agreement=1.00, validators=2, outliers=0", "module": "consensus", "function": "aggregate", "line": 170}
+
+  Consensus: {'consensus_score': 0.828, 'confidence': 0.4803, 'agreement_level': 1.0, 'num_validators': 2, 'outliers': [], 'method': 'weighted_median', 'validator_scores': {'miner-0': 0.828, 'miner-1': 0.828}}
+  Winner: miner-0 (score=0.8280)
+
+[5/5] Final stats:
+  Dendrite: requests=2, errors=0, success_rate=100.00%
+  Miner 1: tasks_processed=1
+  Miner 2: tasks_processed=1
+{"timestamp": "2026-03-15T17:09:34.819435+00:00", "level": "INFO", "logger": "sdk.protocol.axon", "message": "Axon stopped \u2014 miner=miner-0", "module": "axon", "function": "stop", "line": 263}
+{"timestamp": "2026-03-15T17:09:35.327303+00:00", "level": "INFO", "logger": "sdk.protocol.axon", "message": "Axon stopped \u2014 miner=miner-1", "module": "axon", "function": "stop", "line": 263}
+
+  Miners stopped.
+
+======================================================================
+  EPOCH TEST PASSED - All miners responded successfully
+======================================================================

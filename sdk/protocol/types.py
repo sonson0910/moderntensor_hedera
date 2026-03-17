@@ -440,11 +440,11 @@ class FeeBreakdown:
     """
     Detailed fee calculation for a task.
 
-    On-chain fee model (matches PaymentEscrow.sol):
-        total_deposit = miner_reward + validator_reward + protocol_fee
-        miner_reward   = 80% of base reward
-        validator_reward = 15% of base reward
-        protocol_fee   =  5% of base reward
+    Unified fee model (matches WHITEPAPER.md):
+        miner_reward     = 85% of base reward
+        validator_reward  =  8% of base reward
+        staking_pool     =  5% of base reward
+        protocol_fee     =  2% of base reward
     """
 
     reward_amount: float
@@ -453,18 +453,20 @@ class FeeBreakdown:
     miner_reward: float
     protocol_fee_rate: float
     subnet_fee_rate: float
-    validator_reward: float = 0.0  # 15% validator pool
-    validator_reward_rate: float = 0.15
+    validator_reward: float = 0.0  # 8% validator pool
+    validator_reward_rate: float = 0.08
+    staking_pool: float = 0.0  # 5% staking pool
+    staking_pool_rate: float = 0.05
     subnet_owner_id: str = ""  # Hedera account ID of subnet owner
 
     @property
     def total_fee(self) -> float:
-        return self.protocol_fee + self.subnet_fee + self.validator_reward
+        return self.protocol_fee + self.subnet_fee + self.validator_reward + self.staking_pool
 
     @property
     def total_fee_rate(self) -> float:
         return (
-            self.protocol_fee_rate + self.subnet_fee_rate + self.validator_reward_rate
+            self.protocol_fee_rate + self.subnet_fee_rate + self.validator_reward_rate + self.staking_pool_rate
         )
 
     @property
@@ -475,6 +477,7 @@ class FeeBreakdown:
             + self.validator_reward
             + self.protocol_fee
             + self.subnet_fee
+            + self.staking_pool
         )
 
     def to_dict(self) -> Dict[str, Any]:
@@ -534,14 +537,16 @@ class ProtocolConfig:
     """
     Global protocol configuration.
 
-    Fee split (matches on-chain PaymentEscrow.sol):
-        - 80% → Miner reward
-        - 15% → Validator reward pool
-        -  5% → Protocol treasury
+    Unified fee split (matches WHITEPAPER.md):
+        - 85% → Miner reward
+        -  8% → Validator reward pool
+        -  5% → Staking pool
+        -  2% → Protocol treasury
     """
 
-    protocol_fee_rate: float = 0.05  # 5% of base reward → protocol treasury
-    validator_reward_rate: float = 0.15  # 15% of base reward → validator pool
+    protocol_fee_rate: float = 0.02  # 2% of base reward → protocol treasury
+    validator_reward_rate: float = 0.08  # 8% of base reward → validator pool
+    staking_pool_rate: float = 0.05  # 5% of base reward → staking pool
     min_subnet_fee_rate: float = 0.0
     max_subnet_fee_rate: float = 0.20  # Max 20%
     min_stake_amount: float = 100.0  # Minimum stake to be a miner

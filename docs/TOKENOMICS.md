@@ -63,10 +63,10 @@ pie title MDT Token Allocation (1B Total)
 ```
 Task Reward Flow:
 User pays 100 MDT for Code Review task
-├── 5%  → Protocol Treasury (5 MDT)           [DAO / Burned]
-├── 15% → Validator Pool (15 MDT)             [Trust Nodes]
-├── X%  → Subnet Owner (custom, max 20%)      [Subnet fee]
-└── 80% → Winning Miner (80 MDT)              [Best performer]
+├── 85% → Miners (85 MDT)                  [Proportional by score]
+├── 8%  → Validator Pool (8 MDT)            [Trust Nodes]
+├── 5%  → Staking Pool (5 MDT)              [Passive staking]
+└── 2%  → Protocol Treasury (2 MDT)         [DAO / Burned]
 ```
 
 ### Pillar 3: 🏛️ Governance (DAO Voting)
@@ -88,7 +88,7 @@ User pays 100 MDT for Code Review task
 
 | Mechanism | Burn Rate | Trigger |
 |-----------|-----------|---------|
-| Protocol Fee Burn | 50% of 5% fee | Every task completion |
+| Protocol Fee Burn | 50% of 2% fee | Every task completion |
 | Subnet Registration | 20% of 10K MDT | New subnet creation |
 | Slash Events | 100% of slashed amount | Malicious behavior |
 | Badge Renewal | 100 MDT/year | Annual re-verification |

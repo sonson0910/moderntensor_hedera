@@ -26,6 +26,13 @@ pytest>=7.4.0
 pytest-asyncio>=0.23.0
 pytest-mock>=3.14.0
 
+# Config & Observability
+pyyaml>=6.0
+prometheus_client>=0.20.0
+
+# AI / LLM
+google-genai>=1.0.0
+
 # Optional / Utils
 plyvel==1.5.0  # Note: Requires LevelDB installed on system
 termcolor>=2.4.0

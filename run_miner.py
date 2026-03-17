@@ -45,41 +45,26 @@ logger = logging.getLogger("miner")
 
 
 # ──────────────────────────────────────────────────────────────
-# AI Handler — Replace with your actual AI model
+# AI Handler — Powered by Google Gemini
 # ──────────────────────────────────────────────────────────────
+
+from dotenv import load_dotenv
+load_dotenv()  # MUST load before GeminiMiner reads GOOGLE_API_KEY
+
+from sdk.ai.gemini_ai import GeminiMiner
+
+_gemini = GeminiMiner()
 
 
 def ai_handler(payload: dict, task_type: str) -> dict:
     """
-    Process a task and return results.
+    Process a task using Google Gemini AI.
 
-    This is the core function that miners implement.
-    Replace this with your actual AI model logic.
+    Routes to GeminiMiner which calls the real Gemini API
+    for code review, text generation, and other tasks.
+    Falls back to simulated results if API is unavailable.
     """
-    if task_type == "code_review":
-        code = payload.get("code", "")
-        return {
-            "analysis": f"Code review completed. Analyzed {len(code)} chars.",
-            "findings": [
-                {"severity": "info", "message": "Code structure looks good"},
-                {"severity": "suggestion", "message": "Consider adding type hints"},
-            ],
-            "score": 0.82,
-            "confidence": 0.90,
-        }
-    elif task_type == "text_generation":
-        prompt = payload.get("prompt", "")
-        return {
-            "text": f"Generated response for: {prompt[:50]}...",
-            "tokens_used": len(prompt.split()) * 3,
-            "quality_score": 0.85,
-        }
-    else:
-        return {
-            "status": "processed",
-            "task_type": task_type,
-            "payload_keys": list(payload.keys()),
-        }
+    return _gemini.process(payload, task_type)
 
 
 # ──────────────────────────────────────────────────────────────

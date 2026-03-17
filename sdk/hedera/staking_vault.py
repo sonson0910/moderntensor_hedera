@@ -1,13 +1,16 @@
 """
-Staking Vault Service — StakingVault Contract Integration
+Staking Vault Service — StakingVaultV2 Contract Integration
 
-Manages MDT token staking for miners and validators.
-Contract ABI (StakingVault.sol):
-  stake(uint256 amount, StakeRole role), requestUnstake(), withdraw(),
-  slash(address user, uint256 basisPoints, string reason),
-  isStaked(address), isValidator(address), isMiner(address), getStakeInfo(address),
-  setMinMinerStake(uint256), setMinValidatorStake(uint256), setUnstakeCooldown(uint256),
-  pause(), unpause()
+Manages MDT token staking for miners, validators, and holders.
+Contract ABI (StakingVaultV2.sol):
+  Core: stake(uint256, StakeRole), requestUnstake(), withdraw()
+  Rewards: depositRewards(uint256), claimRewards(), pendingRewards(address)
+  Slashing: slash(address, uint256, string)
+  View: isStaked, isValidator, isMiner, getStakeInfo, getStakeAmount, getPoolStats
+  Fee: getCurrentRegFee()
+  Admin: setMinMinerStake, setMinValidatorStake, setMinHolderStake,
+    setUnstakeCooldown, setRegFeeFloor, setRegFeeCeiling, setDecayInterval,
+    pause, unpause
 
 For ModernTensor on Hedera — Hello Future Hackathon 2026
 """
@@ -20,23 +23,24 @@ from hiero_sdk_python import ContractFunctionParameters
 
 if TYPE_CHECKING:
     from .client import HederaClient
-    from hiero_sdk_python import ContractFunctionResult
+    from hiero_sdk_python import ContractFunctionResult, TransactionReceipt
 
 logger = logging.getLogger(__name__)
 
 
 class StakeRole(IntEnum):
-    """Staking role matching StakingVault.sol"""
+    """Staking role matching StakingVaultV2.sol"""
 
     NONE = 0
     MINER = 1
     VALIDATOR = 2
+    HOLDER = 3
 
 
 class StakingVaultService:
     """
-    Service for StakingVault contract operations.
-    Manages MDT token staking, unstaking, slashing, and role queries.
+    Service for StakingVaultV2 contract operations.
+    Manages MDT token staking, unstaking, rewards, slashing, and role queries.
 
     Usage:
         from sdk.hedera.staking_vault import StakingVaultService, StakeRole
@@ -44,6 +48,7 @@ class StakingVaultService:
         staking.contract_id = "0.0.8046039"
 
         staking.stake(amount=100*10**8, role=StakeRole.MINER)
+        staking.stake(amount=50*10**8, role=StakeRole.HOLDER)
         staking.request_unstake()
         staking.withdraw()
     """
@@ -73,8 +78,10 @@ class StakingVaultService:
 
     # ── Core Staking Operations ──────────────────────────────────
 
-    def stake(self, amount: int, role: int = StakeRole.MINER, gas: int = 500_000):
-        """Stake MDT tokens. role: MINER(1) or VALIDATOR(2)."""
+    def stake(
+        self, amount: int, role: int = StakeRole.MINER, gas: int = 500_000
+    ) -> "TransactionReceipt":
+        """Stake MDT tokens. role: MINER(1), VALIDATOR(2), or HOLDER(3)."""
         self._require_contract()
         params = ContractFunctionParameters()
         params.add_uint256(amount)
@@ -86,7 +93,7 @@ class StakingVaultService:
             gas=gas,
         )
 
-    def request_unstake(self, gas: int = 100_000):
+    def request_unstake(self, gas: int = 100_000) -> "TransactionReceipt":
         """Request unstake (starts 7-day cooldown)."""
         self._require_contract()
         return self.client.execute_contract(
@@ -95,7 +102,7 @@ class StakingVaultService:
             gas=gas,
         )
 
-    def withdraw(self, gas: int = 500_000):
+    def withdraw(self, gas: int = 500_000) -> "TransactionReceipt":
         """Withdraw staked tokens after cooldown period."""
         self._require_contract()
         return self.client.execute_contract(
@@ -110,7 +117,7 @@ class StakingVaultService:
         basis_points: int,
         reason: str,
         gas: int = 200_000,
-    ):
+    ) -> "TransactionReceipt":
         """Slash a staker (owner only). basis_points: 1-10000 (100% = 10000)."""
         self._require_contract()
         params = ContractFunctionParameters()
@@ -121,6 +128,54 @@ class StakingVaultService:
             contract_id=self.contract_id,
             function_name="slash",
             params=params,
+            gas=gas,
+        )
+
+    # ── Reward Pool Operations (V2) ──────────────────────────────
+
+    def deposit_rewards(self, amount: int, gas: int = 200_000) -> "TransactionReceipt":
+        """Deposit MDT into the reward pool for staker distributions."""
+        self._require_contract()
+        params = ContractFunctionParameters()
+        params.add_uint256(amount)
+        return self.client.execute_contract(
+            contract_id=self.contract_id,
+            function_name="depositRewards",
+            params=params,
+            gas=gas,
+        )
+
+    def claim_rewards(self, gas: int = 300_000) -> "TransactionReceipt":
+        """Claim accumulated staking rewards."""
+        self._require_contract()
+        return self.client.execute_contract(
+            contract_id=self.contract_id,
+            function_name="claimRewards",
+            gas=gas,
+        )
+
+    def pending_rewards(
+        self, user_address: str, gas: int = 50_000
+    ) -> "ContractFunctionResult":
+        """Check pending reward amount for an address."""
+        self._require_contract()
+        params = ContractFunctionParameters()
+        params.add_address(user_address)
+        return self.client.call_contract(
+            contract_id=self.contract_id,
+            function_name="pendingRewards",
+            params=params,
+            gas=gas,
+        )
+
+    # ── Fee Query (V2) ───────────────────────────────────────────
+
+    def get_current_reg_fee(self, gas: int = 50_000) -> "ContractFunctionResult":
+        """Get current dynamic registration fee (decays over time)."""
+        self._require_contract()
+        return self.client.call_contract(
+            contract_id=self.contract_id,
+            function_name="getCurrentRegFee",
             gas=gas,
         )
 
@@ -182,9 +237,34 @@ class StakingVaultService:
             gas=gas,
         )
 
+    def get_stake_amount(
+        self, user_address: str, gas: int = 50_000
+    ) -> "ContractFunctionResult":
+        """Get raw stake amount for an address."""
+        self._require_contract()
+        params = ContractFunctionParameters()
+        params.add_address(user_address)
+        return self.client.call_contract(
+            contract_id=self.contract_id,
+            function_name="getStakeAmount",
+            params=params,
+            gas=gas,
+        )
+
+    def get_pool_stats(self, gas: int = 80_000) -> "ContractFunctionResult":
+        """Get reward pool stats (totalStaked, rewardPool, accRewardPerShare, etc.)."""
+        self._require_contract()
+        return self.client.call_contract(
+            contract_id=self.contract_id,
+            function_name="getPoolStats",
+            gas=gas,
+        )
+
     # ── Admin Functions ──────────────────────────────────────────
 
-    def set_min_miner_stake(self, min_stake: int, gas: int = 100_000):
+    def set_min_miner_stake(
+        self, min_stake: int, gas: int = 100_000
+    ) -> "TransactionReceipt":
         """Set minimum miner stake (owner only)."""
         self._require_contract()
         params = ContractFunctionParameters()
@@ -196,7 +276,9 @@ class StakingVaultService:
             gas=gas,
         )
 
-    def set_min_validator_stake(self, min_stake: int, gas: int = 100_000):
+    def set_min_validator_stake(
+        self, min_stake: int, gas: int = 100_000
+    ) -> "TransactionReceipt":
         """Set minimum validator stake (owner only)."""
         self._require_contract()
         params = ContractFunctionParameters()
@@ -208,7 +290,23 @@ class StakingVaultService:
             gas=gas,
         )
 
-    def set_unstake_cooldown(self, cooldown: int, gas: int = 100_000):
+    def set_min_holder_stake(
+        self, min_stake: int, gas: int = 100_000
+    ) -> "TransactionReceipt":
+        """Set minimum holder stake (owner only)."""
+        self._require_contract()
+        params = ContractFunctionParameters()
+        params.add_uint256(min_stake)
+        return self.client.execute_contract(
+            contract_id=self.contract_id,
+            function_name="setMinHolderStake",
+            params=params,
+            gas=gas,
+        )
+
+    def set_unstake_cooldown(
+        self, cooldown: int, gas: int = 100_000
+    ) -> "TransactionReceipt":
         """Set unstake cooldown period in seconds (owner only)."""
         self._require_contract()
         params = ContractFunctionParameters()
@@ -220,14 +318,56 @@ class StakingVaultService:
             gas=gas,
         )
 
-    def pause(self, gas: int = 50_000):
+    def set_reg_fee_floor(
+        self, floor: int, gas: int = 100_000
+    ) -> "TransactionReceipt":
+        """Set registration fee floor (owner only)."""
+        self._require_contract()
+        params = ContractFunctionParameters()
+        params.add_uint256(floor)
+        return self.client.execute_contract(
+            contract_id=self.contract_id,
+            function_name="setRegFeeFloor",
+            params=params,
+            gas=gas,
+        )
+
+    def set_reg_fee_ceiling(
+        self, ceiling: int, gas: int = 100_000
+    ) -> "TransactionReceipt":
+        """Set registration fee ceiling (owner only)."""
+        self._require_contract()
+        params = ContractFunctionParameters()
+        params.add_uint256(ceiling)
+        return self.client.execute_contract(
+            contract_id=self.contract_id,
+            function_name="setRegFeeCeiling",
+            params=params,
+            gas=gas,
+        )
+
+    def set_decay_interval(
+        self, interval: int, gas: int = 100_000
+    ) -> "TransactionReceipt":
+        """Set fee decay interval in seconds (owner only)."""
+        self._require_contract()
+        params = ContractFunctionParameters()
+        params.add_uint256(interval)
+        return self.client.execute_contract(
+            contract_id=self.contract_id,
+            function_name="setDecayInterval",
+            params=params,
+            gas=gas,
+        )
+
+    def pause(self, gas: int = 50_000) -> "TransactionReceipt":
         """Pause contract (owner only)."""
         self._require_contract()
         return self.client.execute_contract(
             contract_id=self.contract_id, function_name="pause", gas=gas
         )
 
-    def unpause(self, gas: int = 50_000):
+    def unpause(self, gas: int = 50_000) -> "TransactionReceipt":
         """Unpause contract (owner only)."""
         self._require_contract()
         return self.client.execute_contract(

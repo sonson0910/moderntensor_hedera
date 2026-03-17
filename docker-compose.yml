@@ -1,0 +1,94 @@
+# ModernTensor — Docker Compose
+# Usage: docker-compose up --build
+# Dashboard: http://localhost:3000
+
+version: "3.9"
+
+services:
+  # ── Validator Node ──
+  validator:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mt-validator
+    command: python scripts/run_validator.py
+    ports:
+      - "9090:9090"   # Prometheus /metrics
+      - "8765:8765"   # WebSocket live scores
+    volumes:
+      - ./config.yaml:/app/config.yaml:ro
+    environment:
+      - PYTHONPATH=/app
+      - HEDERA_NETWORK=testnet
+      - VALIDATOR_ID=0.0.9999
+    env_file:
+      - .env
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sdk; print('ok')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ── Miner Node 1 (Code Review) ──
+  miner-1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mt-miner-1
+    command: python scripts/run_miner.py
+    environment:
+      - PYTHONPATH=/app
+      - MINER_ID=0.0.1001
+      - MINER_STAKE=500
+      - MINER_SUBNETS=1
+    env_file:
+      - .env
+    depends_on:
+      validator:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ── Miner Node 2 (Sentiment Analysis) ──
+  miner-2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mt-miner-2
+    command: python scripts/run_miner.py
+    environment:
+      - PYTHONPATH=/app
+      - MINER_ID=0.0.1002
+      - MINER_STAKE=300
+      - MINER_SUBNETS=1,2
+    env_file:
+      - .env
+    depends_on:
+      validator:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ── React Dashboard (Vite) ──
+  dashboard:
+    build:
+      context: ./dashboard-ui
+      dockerfile: Dockerfile
+    container_name: mt-dashboard
+    ports:
+      - "3000:80"
+    depends_on:
+      - validator
+    restart: unless-stopped
+
+  # ── Prometheus (optional monitoring) ──
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: mt-prometheus
+    ports:
+      - "9091:9090"
+    volumes:
+      - ./docker/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    depends_on:
+      - validator
+    profiles:
+      - monitoring

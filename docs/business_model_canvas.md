@@ -20,6 +20,7 @@
 ## ✅ Solution
 
 **"The Layer 0 for AI Economies on Hedera"**
+
 - **Subnet Protocol:** Anyone can launch a specialized AI agent network
 - **Shared Security:** All subnets use HCS/HTS/HSCS — no infra from scratch
 - **Unified Liquidity:** One token (MDT) for all AI work across all subnets
@@ -32,6 +33,7 @@
 > **"Launch a specialized AI network in minutes, not months."**
 
 **Key Benefits:**
+
 - ✅ No infrastructure rebuild — consensus, payments, validation included
 - ✅ Real-time micropayments via Hedera (<$0.01 per transaction)
 - ✅ Proof of Intelligence — AI validates AI, scores on-chain
@@ -75,9 +77,9 @@
 ├─────────────────────────────────────────────────────────────────┤
 │                    REVENUE STREAMS                              │
 ├─────────────────────────────────────────────────────────────────┤
-│ • Protocol Fee: 5% of ALL subnet volume (Tax on everything)     │
+│ • Protocol Fee: 2% of ALL subnet volume (Tax on everything)     │
 │ • Subnet Registration: 10,000 MDT burn/lock per new subnet      │
-│ • Reference Subnets: We own #0 (5% fee) + #1 (3% fee)          │
+│ • Reference Subnets: We operate Subnet #0 + Subnet #1           │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -87,10 +89,10 @@
 
 | Revenue Stream | % of Total | Year 1 Target |
 |----------------|------------|---------------|
-| Protocol Fees (5% of all volume) | 55% | $250K |
+| Protocol Fees (2% of all volume) | 55% | $250K |
 | Subnet Registration Fees | 28% | $25K |
 | Reference Subnet Revenue | 17% | $15K |
-| **Total** | **100%** | **$90K** |
+| **Total** | **100%** | **$290K** |
 
 ---
 
@@ -119,16 +121,19 @@
 ## 🎯 Go-To-Market Strategy
 
 **Phase 1 (Month 1-3): Hackathon Launch**
+
 - Launch protocol + AI Code Review subnet
 - Target Web3 security auditors
 - DAO partnerships for smart contract reviews
 
 **Phase 2 (Month 4-6): Community Subnets**
+
 - Enable community subnet creation
 - Data Labeling, DeFi Agents, Content Moderation subnets
 - Developer grants program
 
 **Phase 3 (Month 7-12): Enterprise & Scale**
+
 - Enterprise compliance use cases
 - Cross-chain subnet bridges
 - Protocol governance DAO

@@ -20,6 +20,7 @@ from hiero_sdk_python import (
     PrivateKey,
     Hbar,
     # Account
+    AccountCreateTransaction,
     CryptoGetAccountBalanceQuery,
     AccountInfoQuery,
     AccountInfo,
@@ -227,6 +228,79 @@ class HederaClient:
             tx.set_transaction_memo(memo)
 
         receipt = tx.execute(self.client)
+        return receipt
+
+    def create_account(
+        self, initial_balance_hbar: float = 10.0
+    ) -> tuple:
+        """
+        Create a new Hedera account on-chain.
+
+        Args:
+            initial_balance_hbar: Initial HBAR balance for the new account
+
+        Returns:
+            Tuple of (account_id_str, private_key) for the new account
+        """
+        new_key = PrivateKey.generate_ecdsa()
+
+        tx = AccountCreateTransaction()
+        tx.set_key(new_key.public_key())
+        tx.set_initial_balance(Hbar(initial_balance_hbar))
+        tx.set_transaction_memo("ModernTensor test account")
+
+        receipt = tx.execute(self.client)
+        new_account_id = receipt.account_id
+        account_id_str = str(new_account_id)
+
+        logger.info(f"Created new account: {account_id_str}")
+        return (account_id_str, new_key)
+
+    def transfer_token(
+        self, token_id: str, to_account: str, amount: int
+    ) -> TransactionReceipt:
+        """
+        Transfer fungible tokens to another account.
+
+        Args:
+            token_id: Token ID (e.g., "0.0.12345")
+            to_account: Recipient account ID
+            amount: Amount in smallest unit
+
+        Returns:
+            SDK TransactionReceipt
+        """
+        tid = TokenId.from_string(token_id)
+        tx = TransferTransaction()
+        tx.add_token_transfer(tid, self._operator_id, -amount)
+        tx.add_token_transfer(tid, AccountId.from_string(to_account), amount)
+
+        receipt = tx.execute(self.client)
+        logger.info(f"Transferred {amount} of token {token_id} to {to_account}")
+        return receipt
+
+    def associate_token(
+        self, token_id: str, account_id: str = None
+    ) -> TransactionReceipt:
+        """
+        Associate a token with an account (required before receiving tokens).
+
+        Args:
+            token_id: Token ID to associate
+            account_id: Account to associate (default: operator)
+
+        Returns:
+            SDK TransactionReceipt
+        """
+        tid = TokenId.from_string(token_id)
+        target = AccountId.from_string(account_id) if account_id else self._operator_id
+
+        tx = TokenAssociateTransaction()
+        tx.set_account_id(target)
+        tx.add_token_id(tid)
+
+        receipt = tx.execute(self.client)
+        logger.info(f"Associated token {token_id} with account {account_id or self.operator_id_str}")
         return receipt
 
     # =========================================================================

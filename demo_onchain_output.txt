@@ -1,0 +1,186 @@
+
+  [1m[96m⛓️  Initializing ON-CHAIN mode...[0m
+{"timestamp": "2026-03-16T12:34:20.614342+00:00", "level": "INFO", "logger": "sdk.hedera.config", "message": "Loaded Hedera config: HederaConfig(network=testnet, account_id=0.0.7851838, mdt_token=0.0.7852345)", "module": "config", "function": "load_hedera_config", "line": 295}
+{"timestamp": "2026-03-16T12:34:21.485062+00:00", "level": "INFO", "logger": "sdk.hedera.client", "message": "Connected to Hedera testnet as 0.0.7851838", "module": "client", "function": "_initialize", "line": 128}
+  [92m✓ Hedera client connected[0m
+    Account:      0.0.7851838
+    Network:      testnet
+    Contract:     0.0.8101733
+    HCS Task:     0.0.7852337
+    HCS Scoring:  0.0.7852336
+
+[1m[93m╔══════════════════════════════════════════════════════════╗
+║           🟡  LIVE TASK SUBMISSION — Terminal 3          ║
+║              ModernTensor on Hedera Network              ║
+║         [92mMode: ON-CHAIN[93m                                     ║
+╚══════════════════════════════════════════════════════════╝[0m
+
+  [2mMiner endpoint:[0m [92mhttp://localhost:8091[0m
+  [2mTasks to run:[0m [92m3[0m
+  [2mMode:[0m [92mON-CHAIN ⛓️[0m
+
+  [2mChecking miner health...[0m
+  [92m✓ Miner is ONLINE[0m
+  [2mMiner ID:[0m [92m0.0.7851838[0m
+  [2mStatus:[0m [92monline[0m
+
+[1m[95m┌──────────────────────────────────────────────────────────┐
+│  TASK 1: Smart Contract Code Review                      │
+└──────────────────────────────────────────────────────────┘[0m
+  [2mĐánh giá security của smart contract StakingVault[0m
+
+  [1mSTEP 1: Create task ON-CHAIN[0m
+  [96m⛓️  SubnetRegistry.createTask()...[0m
+  [92m✓ Task created on-chain (SubnetRegistry)[0m
+    task_hash:     d3b4774ad4506968c7631d6b71d10d91...
+    reward:        10 MDT
+  [92m✓ Task logged to HCS[0m
+    sequence:      #37
+    topic:         0.0.7852337
+    [2m→ https://hashscan.io/testnet/topic/0.0.7852337[0m
+
+  [1mSTEP 2: Send to Miner (Gemini AI)[0m
+  [2m→ POST http://localhost:8091/task[0m
+  [2m  task_type: code_review[0m
+  [92m← 200 OK (2054ms)[0m
+
+  [1m📋 AI Analysis:[0m
+  Code passes review with 4 minor suggestions. Overall structure and patterns are solid.
+
+  [1mScore:[0m [92m███████████████████████░░░░░░░ 0.79[0m
+  [1mConfidence:[0m 0.85
+
+  [1m🔍 Findings (4):[0m
+    🔵 [INFO] External calls detected. Verify checks-effects-interactions pattern is followed to prevent reentrancy.
+    🟢 [SUGGESTION] Magic numbers detected (100). Extract to named constants for better readability.
+    🟢 [SUGGESTION] State-changing functions should emit events for off-chain monitoring and indexing (e.g., The Graph, block explorers).
+    🔵 [INFO] Consider adding NatSpec documentation (/// or /** */) to public functions for better developer experience.
+
+  [1m🔗 Result Hash:[0m 95a5813de25058c7e5c0103a825e772676617da78274af94...
+
+  [1m[92m⛓️  ON-CHAIN VERIFICATION:[0m
+    HCS Topic:  0.0.7852337
+    [96m→ https://hashscan.io/testnet/topic/0.0.7852337[0m
+    Sequence:   #37
+    [92m✓ SubnetRegistry transaction confirmed[0m
+
+  [1mSTEP 3: Submit result ON-CHAIN[0m
+  [96m⛓️  SubnetRegistry.submitResult()...[0m
+  [92m✓ Result submitted on-chain[0m
+    result_hash:   95a5813de25058c7e5c0103a825e7726...
+  [92m✓ Score logged to HCS[0m
+    sequence:      #163
+    [2m→ https://hashscan.io/testnet/topic/0.0.7852336[0m
+  [1m[92m✓ FULL ON-CHAIN CYCLE COMPLETE[0m
+
+  [2m────────────────────────────────────────────────────────[0m
+
+[1m[92m┌──────────────────────────────────────────────────────────┐
+│  TASK 2: AI Agent Safety Analysis                        │
+└──────────────────────────────────────────────────────────┘[0m
+  [2mReview TrustScoreEngine — hệ thống chấm điểm tin cậy cho AI agents[0m
+
+  [1mSTEP 1: Create task ON-CHAIN[0m
+  [96m⛓️  SubnetRegistry.createTask()...[0m
+  [92m✓ Task created on-chain (SubnetRegistry)[0m
+    task_hash:     f21ad8c5b050123954e8a6178e492932...
+    reward:        15 MDT
+  [92m✓ Task logged to HCS[0m
+    sequence:      #38
+    topic:         0.0.7852337
+    [2m→ https://hashscan.io/testnet/topic/0.0.7852337[0m
+
+  [1mSTEP 2: Send to Miner (Gemini AI)[0m
+  [2m→ POST http://localhost:8091/task[0m
+  [2m  task_type: code_review[0m
+  [92m← 200 OK (2058ms)[0m
+
+  [1m📋 AI Analysis:[0m
+  Code quality is acceptable with 1 warning(s) to address. 2 additional suggestions for improvement.
+
+  [1mScore:[0m [92m██████████████████████░░░░░░░░ 0.76[0m
+  [1mConfidence:[0m 0.85
+
+  [1m🔍 Findings (3):[0m
+    🟡 [WARNING] No error handling detected (try/catch or require/revert). Functions should validate inputs and handle edge cases.
+    🟢 [SUGGESTION] Magic numbers detected (5000, 500). Extract to named constants for better readability.
+    🔵 [INFO] Consider adding NatSpec documentation (/// or /** */) to public functions for better developer experience.
+
+  [1m🔗 Result Hash:[0m 25b6145288e8a7de28a980b5346b9768802e9377cea55046...
+
+  [1m[92m⛓️  ON-CHAIN VERIFICATION:[0m
+    HCS Topic:  0.0.7852337
+    [96m→ https://hashscan.io/testnet/topic/0.0.7852337[0m
+    Sequence:   #38
+    [92m✓ SubnetRegistry transaction confirmed[0m
+
+  [1mSTEP 3: Submit result ON-CHAIN[0m
+  [96m⛓️  SubnetRegistry.submitResult()...[0m
+  [92m✓ Result submitted on-chain[0m
+    result_hash:   25b6145288e8a7de28a980b5346b9768...
+  [92m✓ Score logged to HCS[0m
+    sequence:      #164
+    [2m→ https://hashscan.io/testnet/topic/0.0.7852336[0m
+  [1m[92m✓ FULL ON-CHAIN CYCLE COMPLETE[0m
+
+  [2m────────────────────────────────────────────────────────[0m
+
+[1m[96m┌──────────────────────────────────────────────────────────┐
+│  TASK 3: Decentralized AI Whitepaper Draft               │
+└──────────────────────────────────────────────────────────┘[0m
+  [2mGemini viết executive summary cho whitepaper[0m
+
+  [1mSTEP 1: Create task ON-CHAIN[0m
+  [96m⛓️  SubnetRegistry.createTask()...[0m
+  [92m✓ Task created on-chain (SubnetRegistry)[0m
+    task_hash:     835313a92b302cc65e7eb05b8eefc564...
+    reward:        20 MDT
+  [92m✓ Task logged to HCS[0m
+    sequence:      #39
+    topic:         0.0.7852337
+    [2m→ https://hashscan.io/testnet/topic/0.0.7852337[0m
+
+  [1mSTEP 2: Send to Miner (Gemini AI)[0m
+  [2m→ POST http://localhost:8091/task[0m
+  [2m  task_type: text_generation[0m
+  [92m← 200 OK (2060ms)[0m
+
+  [1m📝 Generated Text:[0m
+  ModernTensor introduces a decentralized verification framework for AI computations built on Hedera's hashgraph consensus. By leveraging Hedera Consensus Service (HCS) for immutable task logging and smart contracts for automated staking and reward distribution, the protocol ensures that AI inference results are verifiable, transparent, and economically incentivized.
+  
+  The architecture consists of three layers: (1) a Validator network that creates tasks and scores results using multi-dimensional quality metrics, (2) a Miner network that processes AI workloads using models like Gemini and submits cryptographic proofs of computation, and (3) a Consensus layer built on Hedera smart contracts (StakingVault, SubnetRegistry) that manages stake-weighted rewards and slash conditions.
+  
+  Preliminary benchmarks show that ModernTensor achieves sub-3-second task completion with 99.7% uptime across distributed miner nodes, while maintaining verifiable result integrity through SHA-256 commit-reveal schemes recorded on HCS.
+
+  [1m🔗 Result Hash:[0m 28deafd57161c3529bc4808f72bee144444594446bc07858...
+
+  [1m[92m⛓️  ON-CHAIN VERIFICATION:[0m
+    HCS Topic:  0.0.7852337
+    [96m→ https://hashscan.io/testnet/topic/0.0.7852337[0m
+    Sequence:   #39
+    [92m✓ SubnetRegistry transaction confirmed[0m
+
+  [1mSTEP 3: Submit result ON-CHAIN[0m
+  [96m⛓️  SubnetRegistry.submitResult()...[0m
+  [92m✓ Result submitted on-chain[0m
+    result_hash:   28deafd57161c3529bc4808f72bee144...
+  [92m✓ Score logged to HCS[0m
+    sequence:      #165
+    [2m→ https://hashscan.io/testnet/topic/0.0.7852336[0m
+  [1m[92m✓ FULL ON-CHAIN CYCLE COMPLETE[0m
+
+[1m[92m╔══════════════════════════════════════════════════════════╗
+║                    ✅ DEMO COMPLETE                      ║
+║──────────────────────────────────────────────────────────║
+║  ⛓️ All tasks recorded ON-CHAIN                        ║
+║  ✓ 3 tasks processed by Gemini AI Miner                  ║
+║  ✓ Real-time code review + text generation               ║
+║  ✓ Results hashed & submitted to Hedera                  ║
+║  ✓ ModernTensor — Decentralized AI on Hedera             ║
+╚══════════════════════════════════════════════════════════╝[0m
+
+  [1m🔍 Verify on HashScan:[0m
+  Tasks:  https://hashscan.io/testnet/topic/0.0.7852337
+  Scores: https://hashscan.io/testnet/topic/0.0.7852336
+  Contract: https://hashscan.io/testnet/contract/0.0.8101733
+

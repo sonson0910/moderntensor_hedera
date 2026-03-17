@@ -1,4 +1,5 @@
 # ModernTensor Pitch Deck
+
 ## The AI Subnet Protocol on Hedera
 
 **Hedera Hello Future Apex Hackathon 2026** | AI & Agents Track
@@ -8,6 +9,7 @@
 ## Slide 1: Title
 
 # ⚡ ModernTensor
+
 ### The AI Subnet Protocol
 
 **Launch a specialized AI network in minutes, not months.**
@@ -38,6 +40,7 @@
 **The Layer 0 for AI Economies on Hedera.**
 
 We provide the **infrastructure** — anyone can launch a specialized AI network (subnet) with:
+
 - ✅ Built-in consensus (HCS)
 - ✅ Instant micropayments (HTS + HSCS)
 - ✅ Quality validation (Proof of Intelligence)
@@ -66,10 +69,13 @@ Protocol (SubnetRegistry)
 4. Payment → Winner paid in 3-5 seconds via smart contract
 ```
 
-### Fee Distribution
-- **5% Protocol Fee** → ModernTensor DAO (from ALL subnets)
-- **0–20% Subnet Fee** → Subnet owner
-- **Remainder** → Winning miner
+### Fee Distribution (Unified 85/8/5/2)
+
+- **85%** → Miners (proportional by consensus score)
+- **8%** → Validators (stake-weighted)
+- **5%** → Staking Pool
+- **2% Protocol Fee** → ModernTensor DAO (from ALL subnets)
+- **0–20% Subnet Fee** → Subnet owner (additional)
 
 ---
 
@@ -115,12 +121,13 @@ Protocol (SubnetRegistry)
 
 | Stream | Description | Projected Year 1 |
 |--------|-------------|-------------------|
-| Protocol Fee (5%) | Tax on ALL subnet volume | $250K |
+| Protocol Fee (2%) | Tax on ALL subnet volume | $250K |
 | Subnet Registration | 10,000 MDT burned/locked per subnet | $25K |
-| Reference Subnets | We own Subnet #0 (5%) + #1 (3%) | $15K |
+| Reference Subnets | We operate Subnet #0 + Subnet #1 | $15K |
 | **Total** | | **$90K** |
 
 ### Why This Scales
+
 ```
 More subnets → More volume → More protocol revenue
      ↑                              |
@@ -190,7 +197,7 @@ More subnets → More volume → More protocol revenue
 ```bash
 git clone https://github.com/sonson0910/moderntensor.git
 cd moderntensor
-python scripts/demo_code_review.py
+python run_subnet.py
 ```
 
 ---

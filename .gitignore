@@ -209,3 +209,7 @@ node_modules/
 # Contract build artifacts (optional)
 contracts/artifacts/build-info/
 
+# Runtime data
+data/
+*.json.bak
+treasury_state.json

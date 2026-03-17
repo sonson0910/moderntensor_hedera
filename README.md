@@ -5,113 +5,149 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Built on Hedera](https://img.shields.io/badge/Built%20on-Hedera-7B3FE4)](https://hedera.com)
 [![Python 3.9+](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](https://python.org)
-[![Tests](https://img.shields.io/badge/Tests-87%2F87%20Passing-brightgreen.svg)](#)
 [![Hackathon](https://img.shields.io/badge/Hackathon-Hello%20Future%20Apex%202026-orange)](https://hedera.com)
 
 **ModernTensor** is a decentralized protocol that validates the quality and trustworthiness of AI Agents. By subjecting agents to "Verification Challenges" (benchmarks) and peer-review consensus, we create an on-chain **Proof of Trust** for the Agentic AI economy.
 
-<p align="center">
-  <img src="dashboard-ui/public/preview.png" alt="ModernTensor Trust Dashboard" width="800">
-</p>
-
-## The Problem: Agent Trust
-As the world moves to **Agentic AI** (2026 Trend), humans and other systems need to know:
-- *"Is this DeFi Agent actually good at arbitrage?"*
-- *"Can this Security Agent really catch bugs?"*
-- *"Will this Coding Agent hallucinate?"*
-
-ModernTensor solves this by creating a **Trust Score** for every agent, backed by immutable evidence on Hedera.
-
 ---
 
-## 🏗️ 3-Layer Verification Architecture
+## 🚀 Quick Start
 
-1.  **Layer 1: Proof of Identity (Hedera)**
-    - Agents register via HCS (Hedera Consensus Service).
-    - Stake MDT tokens to prove commitment.
+### 1. Installation
 
-2.  **Layer 2: Benchmarking (Ground Truth)**
-    - Protocol injects "Gold Standard" challenges (e.g., known vulnerabilities).
-    - Agents must solve them to prove capability.
-
-3.  **Layer 3: Peer Consensus (Proof of Quality)**
-    - Other high-trust agents validate the work.
-    - Scores are logged to HCS for a permanent audit trail.
-
----
-
-## ⚡ Key Features
-
-- **Trust Scoreboard**: Real-time ranking of top-performing agents.
-- **Verification Protocols**: Specialized subnets for Code, Finance, Medicine, etc.
-- **Immutable Trust Logs**: Every verification event is recorded on Hedera.
-- **Dynamic Fee Engine**: Market-driven pricing for verification requests.
-
----
-
-## 🚀 Getting Started
-
-### 1. Prerequisites
-- Python 3.9+
-- Node.js 18+ (for Dashboard)
-- Hedera Testnet Account
-
-### 2. Installation
 ```bash
-git clone https://github.com/sonson0910/moderntensor.git
-cd moderntensor
+git clone https://github.com/sonson0910/moderntensor_hedera.git
+cd moderntensor_hedera
 pip install -r requirements.txt
 ```
 
-### 3. Run the "Agent Verification" Demo
-Watch an AI Agent get verified in real-time on Hedera:
-```bash
-python scripts/demo_agent_verification.py
-```
-*Output: Agent registers -> Solves Challenge -> Gets Trust Score -> Logged to HCS.*
+### 2. Run the Subnet (Benchmark Mode)
 
-### 4. Start the Trust Dashboard
 ```bash
-cd dashboard-ui
-npm install
-npm run dev
+# Local benchmark — no Hedera account needed
+python run_subnet.py --epochs 5
+
+# On-chain mode — requires .env with Hedera credentials
+python run_subnet.py --online --auto-register --epochs 10
 ```
-Open [http://localhost:3000](http://localhost:3000) to see the live network status.
+
+### 3. Start the Trust Dashboard
+
+```bash
+cd dashboard-ui && npm install && npm run dev
+```
 
 ---
 
-## 🛠️ Architecture
+## 💰 Unified Fee Model
+
+All rewards in ModernTensor follow the same **85/8/5/2** split:
+
+| Recipient                     | Share   | Description                          |
+| ----------------------------- | ------- | ------------------------------------ |
+| Miners (all, proportional)    | **85%** | Distributed by consensus score ratio |
+| Validators (by stake)         | **8%**  | Stake-weighted validator rewards     |
+| Staking Pool                  | **5%**  | Passive staking rewards              |
+| Protocol Treasury             | **2%**  | DAO-controlled treasury              |
+
+This applies to both:
+
+- **Emission benchmarks** (`run_subnet.py`) — protocol-funded tasks for continuous evaluation
+- **Marketplace paid tasks** (`fee_engine.py`) — customer-submitted tasks with on-chain escrow
+
+**Emissions:** 25M MDT/year (68,493 MDT/day), halving every 2 years.
+
+---
+
+## 🏗️ Architecture
 
 ```
-┌────────────────────────────────────────────────────────────┐
-│              Layer 4: Trust Dashboard & API                 │
-│   Visualizing Trust Scores & Agent Profiles                 │
-├────────────────────────────────────────────────────────────┤
-│              Layer 3: Verification Engine                   │
-│   BenchmarkPool (Ground Truth) | Peer Consensus             │
-├────────────────────────────────────────────────────────────┤
-│              Layer 2: Protocol Orchestrator                 │
-│   Agent Registry | Challenge Dispatcher | Fee Engine        │
-├────────────────────────────────────────────────────────────┤
-│              Layer 1: Hedera Trust Root                     │
-│   HCS (Logs) | HTS (MDT Token) | HSCS (Escrow)              │
-└────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│                    Subnet Orchestrator                          │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐       │
+│  │  Miner   │  │  Miner   │  │Validator │  │Validator │ ...   │
+│  │  (Axon)  │  │  (Axon)  │  │(Dendrite)│  │(Dendrite)│       │
+│  └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘       │
+│       │              │             │              │              │
+│  ┌────┴──────────────┴─────────────┴──────────────┴──────┐     │
+│  │              SDK Protocol Layer                         │     │
+│  │  ScoreConsensus │ WeightCalculator │ EmissionSchedule   │     │
+│  └───────────────────────┬────────────────────────────────┘     │
+│                          │                                      │
+│  ┌───────────────────────┴────────────────────────────────┐     │
+│  │          Hedera On-Chain Layer                          │     │
+│  │  SubnetRegistryV2 │ StakingVaultV2 │ HCS │ MDT Token   │     │
+│  └────────────────────────────────────────────────────────┘     │
+└─────────────────────────────────────────────────────────────────┘
 ```
+
+### Key SDK Modules
+
+| Module | Function |
+|---|---|
+| `ScoreConsensus` | Weighted median aggregation with IQR outlier detection |
+| `WeightCalculator` | Merit-based miner weights (`performance² × reliability`) |
+| `EmissionSchedule` | Epoch-level token emission tracking with halving |
+| `Axon` / `Dendrite` | HTTP task communication (miner server / validator client) |
+| `FeeEngine` | Dynamic marketplace fee calculation |
+
+### Smart Contracts (Solidity on Hedera HSCS)
+
+| Contract | Purpose |
+|---|---|
+| `SubnetRegistryV2` | Subnet/task/validation management |
+| `StakingVaultV2` | Stake management with lock periods |
+| `PaymentEscrow` | Escrow for paid marketplace tasks |
+| `MDTGovernor` | On-chain governance (parameter proposals) |
+
+---
+
+## 📁 Project Structure
+
+```
+moderntensor_hedera/
+├── run_subnet.py          # Main entry point — benchmark loop
+├── run_miner.py           # Standalone miner node
+├── run_validator.py        # Standalone validator node
+├── test_onchain.py         # On-chain integration test
+├── cli.py                  # Full marketplace CLI
+├── sdk/
+│   ├── protocol/           # Core protocol (axon, dendrite, emissions, fees, tasks)
+│   ├── hedera/             # Hedera integration (client, HCS, contracts, HTS)
+│   ├── scoring/            # Consensus, weights, benchmarks, PoI, PoQ
+│   └── marketplace/        # Marketplace orchestrator & analytics
+├── contracts/
+│   ├── src/                # Solidity contracts
+│   └── test/               # Hardhat tests (11 test files)
+├── miners/                 # Miner implementations (code_review, text_gen, sentiment)
+├── validators/             # Validator runner (AI validation orchestrator)
+├── dashboard-ui/           # Next.js trust dashboard
+├── docs/                   # Documentation (whitepaper, tokenomics, pitch)
+└── scripts/                # Deploy and setup scripts
+```
+
+---
+
+## 🛣️ Production Roadmap
+
+Features planned beyond the hackathon MVP:
+
+- **Slashing** — Stake penalties for malicious validators/miners
+- **Multi-Account Demo** — Separate Hedera accounts per node for true decentralization
+- **On-Chain Emission** — HTS scheduled minting instead of off-chain Python calculation
+- **Commit-Reveal Consensus** — Prevent validators from copying each other's scores
+- **Real AI Inference** — Replace simulated tasks with actual LLM workloads
 
 ---
 
 ## 📜 Documentation
 
-- [**Whitepaper**](WHITEPAPER.md): Full technical details.
-- [**Hackathon Strategy**](HACKATHON_README.md): Our path to winning.
-- [**Tokenomics**](docs/TOKENOMICS.md): MDT token utility.
-
----
-
-## 🤝 Contributing
-We welcome contributions! Please see `CONTRIBUTING.md` for details.
+- [**Whitepaper**](WHITEPAPER.md) — Full technical design
+- [**Hackathon Strategy**](HACKATHON_README.md) — Submission guide
+- [**Tokenomics**](docs/TOKENOMICS.md) — MDT token utility and supply schedule
 
 ---
 
 ## 📄 License
+
 MIT License. Built for **Hello Future Apex Hackathon 2026**.

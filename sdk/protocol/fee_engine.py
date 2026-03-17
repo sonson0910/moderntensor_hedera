@@ -53,11 +53,11 @@ class FeeEngine:
     """
     Fee calculation engine for the ModernTensor marketplace.
 
-    Fee Structure (matches PaymentEscrow.sol):
-        protocol_fee     = reward * 5%   → DAO treasury
-        validator_reward  = reward * 15%  → Validator pool
-        subnet_fee       = reward * 0-20% → Subnet owner
-        miner_reward     = reward - protocol_fee - validator_reward - subnet_fee
+    Unified Fee Structure (matches WHITEPAPER.md):
+        miner_reward     = reward * 85%  → Miners (proportional by score)
+        validator_reward  = reward * 8%   → Validator pool
+        staking_pool     = reward * 5%   → Staking rewards
+        protocol_fee     = reward * 2%   → DAO treasury
 
     Priority multipliers adjust the effective reward:
         LOW:    0.8x
@@ -73,13 +73,13 @@ class FeeEngine:
         engine = FeeEngine(config)
         breakdown = engine.calculate(
             reward_amount=100.0,
-            subnet_fee_rate=0.03,
+            subnet_fee_rate=0.0,
             priority=TaskPriority.NORMAL,
         )
-        # breakdown.protocol_fee     = 5.0
-        # breakdown.validator_reward = 15.0
-        # breakdown.subnet_fee       = 3.0
-        # breakdown.miner_reward     = 77.0
+        # breakdown.miner_reward     = 85.0
+        # breakdown.validator_reward = 8.0
+        # breakdown.staking_pool     = 5.0
+        # breakdown.protocol_fee     = 2.0
     """
 
     def __init__(
@@ -101,17 +101,17 @@ class FeeEngine:
     def calculate(
         self,
         reward_amount: float,
-        subnet_fee_rate: float,
+        subnet_fee_rate: float = 0.0,
         priority: TaskPriority = TaskPriority.NORMAL,
     ) -> FeeBreakdown:
         """
         Calculate all fees for a task.
 
-        On-chain split (matches PaymentEscrow.sol):
-            - 80% → Miner reward
-            - 15% → Validator reward pool
-            -  5% → Protocol treasury
-            - Subnet fee is additional (set by subnet owner)
+        Unified split (matches WHITEPAPER.md):
+            - 85% → Miner reward
+            -  8% → Validator reward pool
+            -  5% → Staking pool
+            -  2% → Protocol treasury
 
         Args:
             reward_amount: Base reward offered by the task submitter
@@ -129,13 +129,17 @@ class FeeEngine:
         # Apply priority multiplier to effective reward
         effective_reward = reward_amount * priority.multiplier
 
-        # Calculate protocol fee (5% of effective reward)
+        # Calculate protocol fee (2% of effective reward)
         protocol_fee_rate = self.config.protocol_fee_rate
         protocol_fee = effective_reward * protocol_fee_rate
 
-        # Calculate validator reward (15% of effective reward)
+        # Calculate validator reward (8% of effective reward)
         validator_reward_rate = self.config.validator_reward_rate
         validator_reward = effective_reward * validator_reward_rate
+
+        # Calculate staking pool (5% of effective reward)
+        staking_pool_rate = self.config.staking_pool_rate
+        staking_pool = effective_reward * staking_pool_rate
 
         # Calculate subnet fee (additional, on top)
         subnet_fee = effective_reward * subnet_fee_rate
@@ -146,8 +150,8 @@ class FeeEngine:
             protocol_fee *= dynamic_multiplier
             subnet_fee *= dynamic_multiplier
 
-        # Miner gets the remainder (80% base minus subnet fee)
-        miner_reward = effective_reward - protocol_fee - validator_reward - subnet_fee
+        # Miner gets the remainder (85% base minus subnet fee)
+        miner_reward = effective_reward - protocol_fee - validator_reward - staking_pool - subnet_fee
 
         # Record metrics
         self.network_load.record_task()
@@ -162,16 +166,19 @@ class FeeEngine:
             subnet_fee_rate=subnet_fee_rate,
             validator_reward=round(validator_reward, 6),
             validator_reward_rate=validator_reward_rate,
+            staking_pool=round(staking_pool, 6),
+            staking_pool_rate=staking_pool_rate,
         )
 
         logger.debug(
-            "Fee calculated: reward=%.4f, protocol=%.4f, validator=%.4f, "
-            "subnet=%.4f, miner=%.4f",
+            "Fee calculated: reward=%.4f, miner=%.4f, validator=%.4f, "
+            "staking=%.4f, protocol=%.4f, subnet=%.4f",
             effective_reward,
-            protocol_fee,
-            validator_reward,
-            subnet_fee,
             miner_reward,
+            validator_reward,
+            staking_pool,
+            protocol_fee,
+            subnet_fee,
         )
         return breakdown
 

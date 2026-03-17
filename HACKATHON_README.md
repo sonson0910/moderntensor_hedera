@@ -15,7 +15,7 @@
 ## 🎯 The Problem
 
 | Issue | Impact |
-|-------|--------|
+| --- | --- |
 | **Building AI networks is hard** | Developers need consensus, payments, and validation infrastructure from scratch |
 | **Siloed AI agents** | Agents in different apps can't coordinate or compete |
 | **Zero monetization for models** | Open-source AI models sit idle with no earning mechanism |
@@ -27,9 +27,19 @@
 
 ModernTensor is the **Layer 0 for AI Economies on Hedera**. Instead of building one marketplace, we provide the **infrastructure** for anyone to launch their own specialized AI network (a "subnet").
 
+### Why Web3 — Not Web2?
+
+| Requirement | Web2 ❌ | ModernTensor + Hedera ✅ |
+| --- | --- | --- |
+| **Trustless micropayments** | Stripe minimum $0.50/tx → unprofitable for AI microtasks | HTS transfers <$0.001/tx → profitable at $0.01 tasks |
+| **Immutable quality audit trail** | Centralized DB → alterable, no trust | HCS messages → verifiable, permanent |
+| **Permissionless subnet creation** | Need platform approval | Smart contract → anyone can register |
+| **Censorship-resistant AI** | Platform can deplatform | On-chain → unstoppable |
+| **Global instant settlement** | 2-3 business days (ACH/SWIFT) | 3-5 seconds (Hedera finality) |
+
 ### Architecture: 4-Layer Marketplace Protocol
 
-```
+```text
   ┌────────────────────────────────────────────────────────────┐
   │              Layer 4: Marketplace Orchestrator             │
   │  MarketplaceProtocol │ SubnetManager │ ProtocolAnalytics   │
@@ -44,15 +54,7 @@ ModernTensor is the **Layer 0 for AI Economies on Hedera**. Instead of building 
   ├────────────────────────────────────────────────────────────┤
   │              Layer 1: Hedera Service Layer                 │
   │  HCS Topics │ HTS Tokens │ Smart Contracts │ Agent Kit     │
-  └────────────────────────┬───────────────┬───────────────────┘
-                           │               │
-              ┌────────────┘               └────────────┐
-              ▼                                         ▼
-    ┌──────────────────┐                   ┌──────────────────┐
-    │  Subnet #0       │                   │  Subnet #1       │
-    │  General AI      │                   │  AI Code Review  │
-    │  Fee: 5%         │                   │  Fee: 3%         │
-    └──────────────────┘                   └──────────────────┘
+  └────────────────────────────────────────────────────────────┘
 ```
 
 ### The Flow (Inside Any Subnet)
@@ -64,38 +66,79 @@ ModernTensor is the **Layer 0 for AI Economies on Hedera**. Instead of building 
 
 ---
 
-## 🧪 Live Demo: AI Code Review Subnet
+## 💰 Unified Fee Model (85/8/5/2)
 
-Our first vertical subnet — **AI Code Review** — demonstrates the protocol in action:
+All rewards in ModernTensor follow the same split:
 
-- **Use case**: Submit Solidity/Python code for AI-powered security audit
-- **Scoring**: Security vulnerabilities, correctness, readability, gas efficiency, best practices
-- **Why it's real**: DAOs and dev teams **need** trustless code audit trails on-chain
+| Recipient | Share | Description |
+| --- | --- | --- |
+| **Miners** (proportional by score) | **85%** | Distributed by consensus score ratio |
+| **Validators** (by stake) | **8%** | Stake-weighted validator rewards |
+| **Staking Pool** | **5%** | Passive staking rewards |
+| **Protocol Treasury** | **2%** | DAO-controlled treasury |
 
-```bash
-# Run the full end-to-end demo
-python scripts/demo_code_review.py
-```
-
-This demo:
-1. Registers the "AI Code Review" subnet on Hedera
-2. Registers miners in the subnet
-3. Submits a Solidity code snippet for review
-4. AI validators score the review quality
-5. Logs everything on HCS, distributes payment via smart contract
+This applies to both emission benchmarks and marketplace paid tasks.
+**Emissions:** 25M MDT/year (68,493 MDT/day), halving every 2 years.
 
 ---
 
 ## 🔗 Hedera Integration (4 Services)
 
 | Service | Usage | Details |
-|---------|-------|---------|
+| --- | --- | --- |
 | **HCS** | Task coordination, score logging, miner registration | 3 Topics |
-| **HTS** | MDT payment token (fungible) | `0.0.XXXXX` |
-| **HSCS** | SubnetRegistry + PaymentEscrow smart contracts | 2 Contracts |
+| **HTS** | MDT payment token (fungible) | Fungible token |
+| **HSCS** | SubnetRegistry + PaymentEscrow + StakingVault + MDTGovernor | 4 Contracts |
 | **Agent Kit** | AI validator integration (OpenAI/Anthropic/Google) | Active |
 
+### 📋 On-Chain Evidence (Hedera Testnet — LIVE)
+
+#### Smart Contracts (HSCS)
+
+| Contract | ID | HashScan |
+| --- | --- | --- |
+| **SubnetRegistry** | `0.0.8101733` | [View on HashScan](https://hashscan.io/testnet/contract/0.0.8101733) |
+| **PaymentEscrow** | `0.0.8101736` | [View on HashScan](https://hashscan.io/testnet/contract/0.0.8101736) |
+| **StakingVault** | `0.0.8101730` | [View on HashScan](https://hashscan.io/testnet/contract/0.0.8101730) |
+| **MDTGovernor** | `0.0.8101737` | [View on HashScan](https://hashscan.io/testnet/contract/0.0.8101737) |
+| **SubnetRegistryV2** | `0.0.8054802` | [View on HashScan](https://hashscan.io/testnet/contract/0.0.8054802) |
+| **StakingVaultV2** | `0.0.8054801` | [View on HashScan](https://hashscan.io/testnet/contract/0.0.8054801) |
+
+#### HCS Topics
+
+| Topic | ID | Purpose | HashScan |
+| --- | --- | --- | --- |
+| **Registration** | `0.0.7852335` | Miner registration events | [View](https://hashscan.io/testnet/topic/0.0.7852335) |
+| **Scoring** | `0.0.7852336` | On-chain score logging | [View](https://hashscan.io/testnet/topic/0.0.7852336) |
+| **Task** | `0.0.7852337` | Task coordination | [View](https://hashscan.io/testnet/topic/0.0.7852337) |
+
+#### HTS Token
+
+| Token | ID | HashScan |
+| --- | --- | --- |
+| **MDT (ModernTensor)** | `0.0.7852345` | [View on HashScan](https://hashscan.io/testnet/token/0.0.7852345) |
+
+#### Operator Account
+
+| Account | ID | HashScan |
+| --- | --- | --- |
+| **Protocol Operator** | `0.0.7851838` | [View on HashScan](https://hashscan.io/testnet/account/0.0.7851838) |
+
+> **All assets are LIVE on Hedera Testnet.** Click any HashScan link to verify deployment.
+
+### Estimated TPS Impact
+
+| Scenario | Hedera Transactions per Task | Daily Tasks | Daily TPS Contribution |
+| --- | --- | --- | --- |
+| 1 AI task | 3 HCS + 4 HTS + 1 HSCS = **8 txns** | — | — |
+| 100 tasks/day (Month 1) | — | 100 | **800 txns** |
+| 10,000 tasks/day (Year 1) | — | 10,000 | **80,000 txns** |
+| 100,000 tasks/day (Year 3) | — | 100,000 | **800,000 txns** |
+
+Each new subnet creates even MORE transactions — this is multiplicative scaling.
+
 **Why Hedera?**
+
 - ⚡ 3–5 second finality (vs 60s+ on other chains)
 - 💰 <$0.01 transaction fees — enables profitable AI microtasks
 - 🏢 Enterprise credibility (Google, IBM, Dell)
@@ -106,6 +149,7 @@ This demo:
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - Python 3.9+
 - Hedera testnet account ([portal.hedera.com](https://portal.hedera.com))
 
@@ -124,22 +168,19 @@ cp .env.example .env
 # Edit .env with your Hedera credentials
 ```
 
+### Run Subnet Benchmark (On-Chain)
+
+```bash
+# Run the full emission benchmark loop (Bittensor-style)
+python run_subnet.py
+```
+
 ### Run Dashboard
 
 ```bash
 cd dashboard-ui
 npm install && npm run dev
 # Open http://localhost:3000/dashboard/
-```
-
-### Run AI Code Review Demo
-
-```bash
-# Set LLM API key
-export OPENAI_API_KEY=your_key
-
-# Run code review subnet demo
-python scripts/demo_code_review.py
 ```
 
 ### CLI Tool
@@ -175,11 +216,11 @@ python cli.py protocol stats
 
 ## 📁 Project Structure
 
-```
+```text
 moderntensor/
 ├── sdk/
 │   ├── hedera/              # Layer 1: Hedera Service Layer
-│   │   ├── client.py        #   HederaClient (core)
+│   │   ├── client.py        #   HederaClient — 658 lines, 4 services
 │   │   ├── hcs.py           #   HCS Topics service
 │   │   ├── hts.py           #   HTS Token service
 │   │   ├── contracts.py     #   Smart Contract service
@@ -190,7 +231,7 @@ moderntensor/
 │   │   ├── types.py         #   All protocol data types
 │   │   ├── task_manager.py  #   Task lifecycle state machine
 │   │   ├── miner_registry.py#   Miner registration + EMA reputation
-│   │   ├── fee_engine.py    #   Dynamic fee calculation
+│   │   ├── fee_engine.py    #   Unified fee engine (85/8/5/2 split)
 │   │   ├── validator.py     #   Validation orchestrator
 │   │   └── matching.py      #   Weighted task-to-miner matching
 │   ├── scoring/             # Layer 3: Scoring Engine
@@ -202,42 +243,54 @@ moderntensor/
 │       ├── orchestrator.py  #   Unified MarketplaceProtocol API
 │       ├── subnet_manager.py#   Subnet lifecycle management
 │       └── analytics.py     #   Protocol-wide analytics
-├── contracts/               # Solidity smart contracts
-│   ├── SubnetRegistry.sol   #   Protocol contract (subnets, tasks, fees)
-│   └── PaymentEscrow.sol    #   Payment escrow contract
+├── contracts/src/           # Solidity smart contracts (7 production)
+│   ├── SubnetRegistry.sol   #   Subnet registration + management
+│   ├── SubnetRegistryV2.sol #   Upgraded registry
+│   ├── PaymentEscrow.sol    #   Payment escrow with fee split
+│   ├── StakingVault.sol     #   Staking pool contract
+│   ├── StakingVaultV2.sol   #   Upgraded staking
+│   ├── MDTGovernor.sol      #   DAO governance
+│   └── ValidationLib.sol    #   On-chain validation library
+├── run_subnet.py            # Subnet orchestrator (Bittensor-style benchmark)
 ├── dashboard-ui/            # React Web Dashboard (Vite)
-├── scripts/                 # Setup & demo scripts
-└── docs/                    # Documentation & pitch deck
+├── tests/                   # 120 pytest tests (100% pass)
+└── docs/                    # Documentation & pitch materials
 ```
 
 ---
 
 ## 💡 Key Features
 
-### Full Protocol Engine (~2,400 lines)
+### Full Protocol Engine (~3,000+ lines)
+
 - **Task Lifecycle State Machine**: submit → match → assign → execute → validate → pay
 - **EMA Reputation System**: Exponential Moving Average tracking with auto-suspension
-- **Dynamic Fee Engine**: Protocol fee (5%) + subnet fee (0-20%) + priority multipliers + congestion pricing
+- **Unified Fee Engine**: 85% miner / 8% validator / 5% staking / 2% protocol + priority multipliers + congestion pricing
 - **Weighted Task Matching**: Anti-sybil caps, load balancing, reputation-weighted random selection
+- **Proportional Rewards**: Score-weighted distribution with weight floor (min 5%) to prevent centralisation
 
 ### Proof of Intelligence (PoI) — Our Innovation
+
 - **Knowledge Verification**: Checks if AI outputs demonstrate genuine domain understanding
 - **Shannon Entropy Analysis**: Detects templated/copied outputs via information entropy
 - **Cross-Validator Correlation**: Catches collusion between validators
 - **Temporal Consistency**: Detects performance gaming via score pattern analysis
 
+### 3-Layer Validation Architecture
+
+- **Layer 1 — PoI**: Anti-cheat (empty output, copy, collusion detection)
+- **Layer 2 — Proof of Quality**: Multi-validator consensus with weighted median + outlier clipping
+- **Layer 3 — Benchmark Challenges**: Ground-truth tasks with known answers injected alongside real tasks
+
 ### Multi-Dimensional Scoring
+
 - 5 built-in dimension scorers: security, correctness, readability, best practices, gas efficiency
 - **Weighted Median Consensus**: Manipulation-resistant aggregation (not simple averaging)
 - **Bonding Curve Weights**: Stake weighting with √ diminishing returns to prevent plutocracy
 - Configurable scoring dimensions per subnet
 
-### AI Code Review Subnet (Live Demo)
-- Multi-LLM support (OpenAI, Anthropic, Google)
-- Structured review output with vulnerability detection
-- On-chain score recording via HCS
-
 ### React Dashboard
+
 - Subnet Explorer with live metrics
 - Miner Leaderboard with reputation rankings
 - Code Review demo with real-time scoring
@@ -245,23 +298,61 @@ moderntensor/
 
 ---
 
+## 🧠 Key Design Decisions
+
+| Decision | Chosen | Alternatives Considered | Rationale |
+| --- | --- | --- | --- |
+| **Fee model** | Unified 85/8/5/2 | Dual model (marketplace vs emission) | Simpler, consistent, easier to explain |
+| **Reward distribution** | Proportional (by score) | Winner-takes-all | Prevents centralisation, keeps miners in network |
+| **Consensus** | Weighted median | Simple average | Resistant to manipulation by outlier validators |
+| **Weight floor** | 5% minimum | No floor | Prevents permanent exclusion of underperforming miners |
+| **Validator scoring** | Ground-truth rubric | Noise on self-reported scores | Independent evaluation prevents miner gaming |
+| **Hedera over other L1** | Hedera HCS/HTS/HSCS | Ethereum, Solana, Sui | <$0.01 fees enable AI microtasks, 3-5s finality |
+| **HCS for scores** | Immutable log | Database | On-chain audit trail, no single point of failure |
+| **Python SDK** | hiero-sdk-python | Custom REST | Official SDK, direct type safety |
+
+---
+
 ## 📊 Business Model
 
 | Revenue Stream | Description |
-|----------------|-------------|
-| **Protocol Fee (5%)** | Tax on ALL subnet volume — automatic, permissionless |
+| --- | --- |
+| **Protocol Fee (2%)** | Tax on ALL subnet volume — automatic, permissionless |
 | **Subnet Registration** | 10,000 MDT burned/locked per subnet |
-| **Reference Subnet** | We own Subnet #0 (5% fee) and Subnet #1 (3% fee) |
+| **Reference Subnets** | We operate Subnet #0 and Subnet #1 |
 
 **Why this scales**: Each new subnet = more volume = more protocol revenue. We don't need to build every vertical — the community does.
 
 ---
 
+## 🧪 Testing
+
+```bash
+# Run full test suite
+python -m pytest tests/ -v
+
+# 120 tests, 100% pass, < 3 seconds
+```
+
+| Test Suite | Count | Coverage |
+| --- | --- | --- |
+| `test_fee_engine.py` | 10 | Fee calculation, priority, dynamic fees |
+| `test_orchestrator.py` | 11 | Emissions, weights, consensus, proportional rewards |
+| `test_scoring.py` | 13 | Multi-dimension scoring, consensus, weight bonds |
+| `test_validation_layers.py` | 17 | Benchmark pool, PoQ, 3-layer integration |
+| `test_poi.py` | 7 | Proof of Intelligence anti-cheat |
+| `test_reward_system.py` | 12 | Escrow, treasury, multi-task accumulation |
+| Other tests | 50 | Miners, matching, task lifecycle, requesters |
+
+---
+
 ## 🎬 Demo
 
-**Live Dashboard:** [Open Dashboard](dashboard/index.html)
+**Live Dashboard:** [Open Dashboard](dashboard-ui/index.html)
 
-**Demo Script:** `python scripts/demo_code_review.py`
+**Subnet Benchmark:** `python run_subnet.py`
+
+**CLI Demo:** `python cli.py demo`
 
 ---
 
@@ -270,7 +361,10 @@ moderntensor/
 - [Business Model Canvas](docs/business_model_canvas.md)
 - [Market Opportunity](docs/market_opportunity.md)
 - [Pitch Deck](docs/PITCH_DECK.md)
-- [Demo Video Script](docs/demo_video_script.md)
+- [Tokenomics](docs/TOKENOMICS.md)
+- [Validation Research](docs/validation_research.md)
+- [Roadmap](docs/ROADMAP.md)
+- [WhitePaper (PDF)](docs/WhitePaper.pdf)
 
 ---
 
